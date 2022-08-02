@@ -34,7 +34,15 @@ jobs:
           kustomize edit set image ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
           rm -f kustomize
 
-          git add .
+      - name: setup git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+      - name: commit
+        run: |
+          git add envs/${{ github.event.inputs.env }}
+          git status
           git commit -m "chore: set ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} to env: ${{ github.event.inputs.env }}"
           git push origin main
 

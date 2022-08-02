@@ -1,0 +1,55 @@
+name: BOT-CI
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      image:
+        required: true
+        description: "docker image name"
+      tag:
+        required: true
+        description: "docker image tag"
+      env:
+        required: true
+        description: "env"
+      src:
+        required: true
+        description: "trigger source"
+
+jobs:
+  commit_changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ github.event.inputs.image }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: kustomize edit
+        if: ${{ github.event.inputs.image }}
+        # kustomize edit set image ${{ github.event.inputs.image }}:${{ github.event.inputs.sha-tag }}
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+          cd envs/${{ github.event.inputs.env }}
+          kustomize edit set image ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+          rm -f kustomize
+
+          git add .
+          git commit -m "chore: set ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} to env: ${{ github.event.inputs.env }}"
+          git push origin main
+
+      # - name: modify patch
+      #   run: |
+      #     cat <<EOF > annotation-patch.yaml
+      #     - op: add
+      #       path: /metadata/annotation
+      #       value:
+      #         argocd.argoproj.io/sync-wave: "90"
+      #         image.name: ${{ github.event.inputs.image }}
+      #     EOF
+
+      # - name: Git Commit/Push Changes
+      #   uses: EndBug/add-and-commit@v9
+      #   if: ${{ github.event.inputs.image }}
+      #   with:
+      #     message: "chore: set ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} to env: ${{ github.event.inputs.env }}"

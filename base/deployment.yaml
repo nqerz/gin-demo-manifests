@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gin-demo
+  labels:
+    app: gin-demo
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gin-demo
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: gin-demo
+        version: v1
+    spec:
+      containers:
+        - name: gin-demo
+          image: what-erver/gin-demo
+          ports:
+            - name: http-8080
+              containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 20m
+              memory: 10Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          env:
+            - name: SECRET_KEY_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: test-secrets
+                  key: SECRET_KEY_NAME

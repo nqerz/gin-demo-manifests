@@ -5,11 +5,14 @@ namespace: local
 namePrefix: local-
 
 resources:
-  - secret.yaml
-  - ../../base
+- secret.yaml
+- ../../base
 
 components:
-  - ../../variants
+- ../../variants
 
 patchesStrategicMerge:
-  - replicas.yaml
+- replicas.yaml
+images:
+- name: docker.io/enqi/gin-demo
+  newTag: sha-459e3a0
